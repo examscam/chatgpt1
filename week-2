@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gas Molecules Simulation</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+    #container {
+      display: flex;
+      flex-direction: row;
+      width: 100%;
+      max-width: 1200px;
+    }
+    #simulationContainer {
+      flex: 2;
+    }
+    #descriptionContainer {
+      flex: 1;
+      padding: 20px;
+      background-color: #f9f9f9;
+      border-left: 2px solid #ccc;
+    }
+    canvas {
+      display: block;
+      margin: 20px auto;
+      background-color: #f0f0f0;
+    }
+    h1 {
+      text-align: center;
+      font-size: 24px;
+    }
+    p {
+      line-height: 1.6;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <!-- Simulation -->
+    <div id="simulationContainer">
+      <h1>2D Gas Molecules Simulation</h1>
+      <canvas id="simulationCanvas" width="800" height="600"></canvas>
+    </div>
+
+    <!-- Description -->
+    <div id="descriptionContainer">
+      <h1>Kinetic Theory of Gases</h1>
+      <p>
+        The kinetic theory of gases explains the behavior of gases by modeling them as a large number of small particles (atoms or molecules) in constant, random motion. The theory makes the following key assumptions:
+      </p>
+      <ul>
+        <li>Gas molecules are in constant, random motion.</li>
+        <li>Molecules interact through elastic collisions, conserving energy and momentum.</li>
+        <li>The volume of the gas molecules is negligible compared to the container volume.</li>
+        <li>There are no forces of attraction or repulsion between molecules except during collisions.</li>
+        <li>The average kinetic energy of the gas molecules is directly proportional to the temperature of the gas.</li>
+      </ul>
+      <p>
+        This theory provides the foundation for understanding gas laws, such as Boyle's Law, Charles's Law, and the Ideal Gas Law.
+      </p>
+      <p>
+        <strong>Key Equation:</strong> The pressure \(P\), volume \(V\), and temperature \(T\) of a gas are related by:
+        \[
+        PV = nRT
+        \]
+        where \(n\) is the number of moles and \(R\) is the universal gas constant.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("simulationCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // Constants
+    const NUM_MOLECULES = 100; // Number of molecules
+    const MOLECULE_RADIUS = 5;
+    const MOLECULE_MASS = 1;
+    const CONTAINER_WIDTH = canvas.width;
+    const CONTAINER_HEIGHT = canvas.height;
+    const DAMPING = 0.9; // Elasticity of collisions
+
+    // Molecule class
+    class Molecule {
+      constructor(x, y, vx, vy) {
+        this.x = x;
+        this.y = y;
+        this.vx = vx;
+        this.vy = vy;
+        this.radius = MOLECULE_RADIUS;
+      }
+
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = "#0077cc";
+        ctx.fill();
+        ctx.closePath();
+      }
+
+      updatePosition(dt) {
+        this.x += this.vx * dt;
+        this.y += this.vy * dt;
+
+        // Reflect from walls
+        if (this.x - this.radius < 0 || this.x + this.radius > CONTAINER_WIDTH) {
+          this.vx = -this.vx * DAMPING;
+        }
+        if (this.y - this.radius < 0 || this.y + this.radius > CONTAINER_HEIGHT) {
+          this.vy = -this.vy * DAMPING;
+        }
+
+        // Keep molecule within bounds
+        this.x = Math.max(this.radius, Math.min(this.x, CONTAINER_WIDTH - this.radius));
+        this.y = Math.max(this.radius, Math.min(this.y, CONTAINER_HEIGHT - this.radius));
+      }
+    }
+
+    // Initialize molecules
+    const molecules = [];
+    for (let i = 0; i < NUM_MOLECULES; i++) {
+      const x = Math.random() * (CONTAINER_WIDTH - 2 * MOLECULE_RADIUS) + MOLECULE_RADIUS;
+      const y = Math.random() * (CONTAINER_HEIGHT - 2 * MOLECULE_RADIUS) + MOLECULE_RADIUS;
+      const vx = (Math.random() - 0.5) * 100; // Random horizontal velocity
+      const vy = (Math.random() - 0.5) * 100; // Random vertical velocity
+      molecules.push(new Molecule(x, y, vx, vy));
+    }
+
+    // Animation loop
+    function animate() {
+      ctx.clearRect(0, 0, CONTAINER_WIDTH, CONTAINER_HEIGHT);
+
+      for (const molecule of molecules) {
+        molecule.updatePosition(0.016); // Assuming ~60 FPS
+        molecule.draw();
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    // Start the animation
+    animate();
+  </script>
+</body>
+</html>
